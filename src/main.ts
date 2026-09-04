@@ -10,7 +10,7 @@ import {
 	DEFAULT_SETTINGS,
 	MyPluginSettings,
 	SampleSettingTab,
-} from './settings';
+} from './settings.js';
 
 // Remember to rename these classes and interfaces!
 
@@ -86,7 +86,7 @@ export default class MyPlugin extends Plugin {
 		);
 	}
 
-	onunload() {}
+	onunload() { }
 
 	async loadSettings() {
 		this.settings = Object.assign(
