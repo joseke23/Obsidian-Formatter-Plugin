@@ -1,7 +1,7 @@
 {
-	"name": "obsidian-sample-plugin",
+	"name": "obsidian-formatter",
 	"version": "1.0.0",
-	"description": "This is a sample plugin for Obsidian (https://obsidian.md)",
+	"description": "Personalised plugin to consistently apply and change formatting in my vault.",
 	"main": "main.js",
 	"type": "module",
 	"scripts": {

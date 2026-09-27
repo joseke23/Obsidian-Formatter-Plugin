@@ -1,18 +1,19 @@
 import { App, PluginSettingTab, Setting } from 'obsidian';
-import MyPlugin from './main.js';
+import AutoFormatter from './main.js';
 
-export interface MyPluginSettings {
+export interface PluginSettings {
 	mySetting: string;
+	weekTemplatePath: string;
 }
 
-export const DEFAULT_SETTINGS: MyPluginSettings = {
+export const DEFAULT_SETTINGS: PluginSettings = {
 	mySetting: 'default',
 };
 
-export class SampleSettingTab extends PluginSettingTab {
-	plugin: MyPlugin;
+export class SettingTab extends PluginSettingTab {
+	plugin: AutoFormatter;
 
-	constructor(app: App, plugin: MyPlugin) {
+	constructor(app: App, plugin: AutoFormatter) {
 		super(app, plugin);
 		this.plugin = plugin;
 	}
