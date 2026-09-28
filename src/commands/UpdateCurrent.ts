@@ -3,7 +3,7 @@ import { Notice, Plugin } from 'obsidian';
 export async function updateCurrent(plugin: Plugin): Promise<void> {
 
 }
-
+/*
 const file = this.app.workspace.getActiveFile();
 if (!file) return;
 
@@ -29,3 +29,4 @@ await this.app.fileManager.renameFile(file, 'Archive/Renamed note.md');
 
 // Delete a file
 await this.app.vault.delete(file);
+*/

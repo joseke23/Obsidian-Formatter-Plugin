@@ -2,13 +2,20 @@ import { App, PluginSettingTab, Setting } from 'obsidian';
 import AutoFormatter from './main.js';
 
 export interface PluginSettings {
-	mySetting: string;
 	weekTemplatePath: string;
+	monthTemplatePath: string;
+	yearTemplatePath: string;
+	currentFolderPath: string;
+	oldFolderPath: string;
 }
 
 export const DEFAULT_SETTINGS: PluginSettings = {
-	mySetting: 'default',
-};
+	weekTemplatePath: "",
+	monthTemplatePath: "",
+	yearTemplatePath: "",
+	currentFolderPath: "",
+	oldFolderPath: ""
+}
 
 export class SettingTab extends PluginSettingTab {
 	plugin: AutoFormatter;
@@ -23,15 +30,56 @@ export class SettingTab extends PluginSettingTab {
 
 		containerEl.empty();
 
+		containerEl.createEl('h2', { text: 'Templates' });
+		this.addPathSetting(
+			containerEl,
+			'Week template',
+			'Path to the template used for weekly notes.',
+			'weekTemplatePath',
+		);
+		this.addPathSetting(
+			containerEl,
+			'Month template',
+			'Path to the template used for monthly notes.',
+			'monthTemplatePath',
+		);
+		this.addPathSetting(
+			containerEl,
+			'Year template',
+			'Path to the template used for yearly notes.',
+			'yearTemplatePath',
+		);
+
+		containerEl.createEl('h2', { text: 'Folders' });
+		this.addPathSetting(
+			containerEl,
+			'Current folder',
+			'Folder where current notes are stored.',
+			'currentFolderPath',
+		);
+		this.addPathSetting(
+			containerEl,
+			'Old folder',
+			'Folder where old notes are archived.',
+			'oldFolderPath',
+		);
+	}
+
+	private addPathSetting(
+		containerEl: HTMLElement,
+		name: string,
+		description: string,
+		key: keyof PluginSettings,
+	): void {
 		new Setting(containerEl)
-			.setName('Settings #1')
-			.setDesc("It's a secret")
+			.setName(name)
+			.setDesc(description)
 			.addText((text) =>
 				text
-					.setPlaceholder('Enter your secret')
-					.setValue(this.plugin.settings.mySetting)
+					.setPlaceholder('Folder/note.md')
+					.setValue(this.plugin.settings[key])
 					.onChange(async (value) => {
-						this.plugin.settings.mySetting = value;
+						this.plugin.settings[key] = value;
 						await this.plugin.saveSettings();
 					}),
 			);
