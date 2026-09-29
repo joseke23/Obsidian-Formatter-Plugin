@@ -1,6 +1,22 @@
-import { Notice, Plugin } from 'obsidian';
+import { Notice, Plugin, TFolder, TFile } from 'obsidian';
+import AutoFormatter from '../main.js';
 
-export async function updateCurrent(plugin: Plugin): Promise<void> {
+export async function updateCurrent(plugin: AutoFormatter): Promise<void> {
+    const currentFolder = plugin.app.vault.getAbstractFileByPath(plugin.settings.currentFolderPath);
+
+    if (!(currentFolder instanceof TFolder)) {
+        new Notice(`Current folder misconfigured: ${plugin.settings.currentFolderPath}`)
+        return;
+    }
+
+    const MDFiles = currentFolder.children.filter(
+        (child): child is TFile =>
+            child instanceof TFile && child.extension === 'md',
+    );
+
+    const now = new Date();
+
+
 
 }
 /*
