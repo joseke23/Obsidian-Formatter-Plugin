@@ -11,6 +11,8 @@ import {
 	PluginSettings,
 	SettingTab,
 } from './settings.js';
+import { updateCurrent } from './commands/UpdateCurrent.js';
+
 
 // Remember to rename these classes and interfaces!
 
@@ -73,6 +75,8 @@ export default class AutoFormatter extends Plugin {
 		this.registerInterval(
 			window.setInterval(() => console.log('setInterval'), 5 * 60 * 1000),
 		);
+
+		await updateCurrent(this);
 	}
 
 	onunload() { }
