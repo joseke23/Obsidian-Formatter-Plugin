@@ -43,17 +43,18 @@ export async function updateCurrent(plugin: AutoFormatter): Promise<void> {
             const newFile = await plugin.app.vault.create(
                 `${currentFolder.path}/Year ${now.getFullYear()}.md`,
                 content,);
+            let count = 0;
+            await plugin.app.vault.process(newFile, (content) => {
+                return content.replaceAll("Month 0000-00", () => {
+                    count++;
+                    return `Month ${now.getFullYear()}-${(count).toString().padStart(2, '0')}`;
+                });
+            });
         }
-
-
     }
-
-    const month = MDFiles.filter((file): file is TFile => file.basename.contains("Month")).first();
-    const week = MDFiles.filter((file): file is TFile => file.basename.contains("Week")).first();
-
-
-
 }
+
+
 /*
 const file = this.app.workspace.getActiveFile();
 if (!file) return;
