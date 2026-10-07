@@ -116,5 +116,49 @@ export async function updateCurrent(plugin: AutoFormatter): Promise<void> {
             });
         }
     }
-
+    // Handling Week
+    const weekTemplate = plugin.app.vault.getAbstractFileByPath(plugin.settings.weekTemplatePath)
+    if (!(weekTemplate instanceof TFile)) {
+        new Notice(`Week Template misconfigured: ${plugin.settings.weekTemplatePath}`)
+    } else {
+        let weeks = MDFiles.filter((file): file is TFile => file.basename.contains("Week"));// Changing naming filter to allow for configurable naming conventions
+        // Moving previous weeks to the old folder
+        for (const week of weeks) {
+            if (week?.basename !== `Week ${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}-${(now.getDate() - now.getDay() + 1).toString().padStart(2, '0')}`) {
+                let year = week.basename.match(/\d{4}/g)?.join();
+                let monthNum = week.basename.match(/-\d{2}/g)?.join().replace("-", "");
+                let weekNum = week.basename.match(/-\d{2}$/g)?.join().replace("-", "");
+                if (year && monthNum && weekNum) {
+                    // Makes sure specific year folder exists in the old folder
+                    if (!plugin.app.vault.getAbstractFileByPath(`${oldFolder.path}/${year}`)) {
+                        await plugin.app.vault.createFolder(`${oldFolder.path}/${year}`);
+                    }
+                    // Makes sure specific month folder exists in the old folder
+                    if (!plugin.app.vault.getAbstractFileByPath(`${oldFolder.path}/${year}/${monthNum}`)) {
+                        await plugin.app.vault.createFolder(`${oldFolder.path}/${year}/${monthNum}`);
+                    }
+                    let add = "";
+                    while (plugin.app.vault.getAbstractFileByPath(`${oldFolder.path}/${year}/${monthNum}/${week.basename + add}.md`)) {
+                        if (add === "") {
+                            add = "0"
+                        }
+                        add = "(" + (parseInt(add.replace(/\D/g, ""), 10) + 1).toString() + ")";
+                    }
+                    await plugin.app.vault.rename(week, `${oldFolder.path}/${year}/${monthNum}/${week.basename + add}.md`);
+                }
+            }
+        }
+        MDFiles = currentFolder.children.filter(
+            (child): child is TFile =>
+                child instanceof TFile && child.extension === 'md',
+        );
+        // Creating a new week if it doesn't exist
+        weeks = MDFiles.filter((file): file is TFile => file.basename.contains("Week"));
+        if (weeks.length == 0) {
+            const content = await plugin.app.vault.read(weekTemplate);
+            await plugin.app.vault.create(
+                `${currentFolder.path}/Week ${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}-${(now.getDate() - now.getDay() + 1).toString().padStart(2, '0')}.md`,
+                content);
+        }
+    }
 }
