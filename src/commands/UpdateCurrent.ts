@@ -107,11 +107,14 @@ export async function updateCurrent(plugin: AutoFormatter): Promise<void> {
             const newFile = await plugin.app.vault.create(
                 `${currentFolder.path}/Month ${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}.md`,
                 content,);
-            let count = 8 + new Date(now.getFullYear(), now.getMonth(), 1).getDay();
+            let count = (7 - new Date(now.getFullYear(), now.getMonth(), 1).getDay()) % 7 - 5;
             await plugin.app.vault.process(newFile, (content) => {
                 return content.replaceAll("Week 0000-00-00", () => {
-                    return `Week ${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}`;
+                    count += 7;
+                    return `Week ${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}-${(count).toString().padStart(2, '0')}`;
                 });
             });
         }
     }
+
+}
