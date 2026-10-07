@@ -69,34 +69,49 @@ export async function updateCurrent(plugin: AutoFormatter): Promise<void> {
     const monthTemplate = plugin.app.vault.getAbstractFileByPath(plugin.settings.monthTemplatePath)
     if (!(monthTemplate instanceof TFile)) {
         new Notice(`Month Template misconfigured: ${plugin.settings.monthTemplatePath}`)
+    } else {
+        let months = MDFiles.filter((file): file is TFile => file.basename.contains("Month"));// Changing naming filter to allow for configurable naming conventions
+        // Moving previous months to the old folder
+        for (const month of months) {
+            if (month?.basename !== `Month ${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}`) {
+                let year = month.basename.match(/\d{4}/g)?.join();
+                let monthNum = month.basename.match(/-\d{2}/g)?.join().replace("-", "");
+                if (year && monthNum) {
+                    // Makes sure specific year folder exists in the old folder
+                    if (!plugin.app.vault.getAbstractFileByPath(`${oldFolder.path}/${year}`)) {
+                        await plugin.app.vault.createFolder(`${oldFolder.path}/${year}`);
+                    }
+                    // Makes sure specific month folder exists in the old folder
+                    if (!plugin.app.vault.getAbstractFileByPath(`${oldFolder.path}/${year}/${monthNum}`)) {
+                        await plugin.app.vault.createFolder(`${oldFolder.path}/${year}/${monthNum}`);
+                    }
+                    let add = "";
+                    while (plugin.app.vault.getAbstractFileByPath(`${oldFolder.path}/${year}/${monthNum}/${month.basename + add}.md`)) {
+                        if (add === "") {
+                            add = "0"
+                        }
+                        add = "(" + (parseInt(add.replace(/\D/g, ""), 10) + 1).toString() + ")";
+                    }
+                    await plugin.app.vault.rename(month, `${oldFolder.path}/${year}/${monthNum}/${month.basename + add}.md`);
+                }
+            }
+        }
+        MDFiles = currentFolder.children.filter(
+            (child): child is TFile =>
+                child instanceof TFile && child.extension === 'md',
+        );
+        // Creating a new month if it doesn't exist
+        months = MDFiles.filter((file): file is TFile => file.basename.contains("Month"));
+        if (months.length == 0) {
+            const content = await plugin.app.vault.read(monthTemplate);
+            const newFile = await plugin.app.vault.create(
+                `${currentFolder.path}/Month ${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}.md`,
+                content,);
+            let count = 8 + new Date(now.getFullYear(), now.getMonth(), 1).getDay();
+            await plugin.app.vault.process(newFile, (content) => {
+                return content.replaceAll("Week 0000-00-00", () => {
+                    return `Week ${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}`;
+                });
+            });
+        }
     }
-}
-
-
-/*
-const file = this.app.workspace.getActiveFile();
-if (!file) return;
-
-// Read the entire file
-const content = await this.app.vault.read(file);
-
-// Replace the entire file
-await this.app.vault.modify(file, newContent);
-
-// Read, transform, and write atomically
-await this.app.vault.process(file, (content) => {
-    return content.replace('old text', 'new text');
-});
-
-// Create a markdown file
-const newFile = await this.app.vault.create(
-    'Folder/New note.md',
-    '# New note\n\nContent here.\n',
-);
-
-// Rename or move a file
-await this.app.fileManager.renameFile(file, 'Archive/Renamed note.md');
-
-// Delete a file
-await this.app.vault.delete(file);
-*/
