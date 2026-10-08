@@ -2,7 +2,6 @@ import {
 	Editor,
 	MarkdownView,
 	MarkdownFileInfo,
-	Modal,
 	Notice,
 	Plugin,
 } from 'obsidian';
@@ -29,13 +28,6 @@ export default class AutoFormatter extends Plugin {
 
 
 		this.addCommand({
-			id: 'open-modal-simple',
-			name: 'Open modal (simple)',
-			callback: () => {
-				new SampleModal(this.app).open();
-			},
-		});
-		this.addCommand({
 			id: 'replace-selected',
 			name: 'Replace selected content',
 			editorCallback: (
@@ -43,22 +35,6 @@ export default class AutoFormatter extends Plugin {
 				_ctx: MarkdownView | MarkdownFileInfo,
 			) => {
 				editor.replaceSelection('Sample editor command');
-			},
-		});
-		this.addCommand({
-			id: 'open-modal-complex',
-			name: 'Open modal (complex)',
-			checkCallback: (checking: boolean) => {
-				// Conditions to check
-				const markdownView =
-					this.app.workspace.getActiveViewOfType(MarkdownView);
-				if (markdownView) {
-					if (!checking) {
-						new SampleModal(this.app).open();
-					}
-					return true;
-				}
-				return false;
 			},
 		});
 
@@ -70,11 +46,6 @@ export default class AutoFormatter extends Plugin {
 		this.registerDomEvent(activeDocument, 'click', (_evt: MouseEvent) => {
 			new Notice('Click');
 		});
-
-		// When registering intervals, this function will automatically clear the interval when the plugin is disabled.
-		this.registerInterval(
-			window.setInterval(() => console.log('setInterval'), 5 * 60 * 1000),
-		);
 
 		await updateCurrent(this);
 	}
@@ -94,14 +65,3 @@ export default class AutoFormatter extends Plugin {
 	}
 }
 
-class SampleModal extends Modal {
-	onOpen() {
-		const { contentEl } = this;
-		contentEl.setText('Woah!');
-	}
-
-	onClose() {
-		const { contentEl } = this;
-		contentEl.empty();
-	}
-}

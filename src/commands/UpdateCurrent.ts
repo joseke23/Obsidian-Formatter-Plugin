@@ -1,4 +1,4 @@
-import { Notice, Plugin, TFolder, TFile } from 'obsidian';
+import { Notice, TFolder, TFile } from 'obsidian';
 import AutoFormatter from '../main.js';
 
 export async function updateCurrent(plugin: AutoFormatter): Promise<void> {
