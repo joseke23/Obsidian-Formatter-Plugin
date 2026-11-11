@@ -9,6 +9,7 @@ import {
 	DEFAULT_SETTINGS,
 	PluginSettings,
 	SettingTab,
+	getConfiguredPeriods,
 } from './settings.js';
 import { updateCurrent } from './commands/UpdateCurrent.js';
 
@@ -41,22 +42,18 @@ export default class AutoFormatter extends Plugin {
 		// This adds a settings tab so the user can configure various aspects of the plugin
 		this.addSettingTab(new SettingTab(this.app, this));
 
-		// If the plugin hooks up any global DOM events (on parts of the app that doesn't belong to this plugin)
-		// Using this function will automatically remove the event listener when this plugin is disabled.
-		this.registerDomEvent(activeDocument, 'click', (_evt: MouseEvent) => {
-			new Notice('Click');
-		});
-
 		await updateCurrent(this);
 	}
 
 	onunload() { }
 
 	async loadSettings() {
+		const savedSettings = (await this.loadData()) as Partial<PluginSettings>;
 		this.settings = Object.assign(
 			{},
 			DEFAULT_SETTINGS,
-			(await this.loadData()) as Partial<PluginSettings>,
+			savedSettings,
+			{ periods: getConfiguredPeriods(savedSettings.periods) },
 		);
 	}
 
@@ -64,4 +61,3 @@ export default class AutoFormatter extends Plugin {
 		await this.saveData(this.settings);
 	}
 }
-
