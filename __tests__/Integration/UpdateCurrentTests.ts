@@ -1,5 +1,26 @@
 import { evalInObsidian, reloadPlugin } from 'obsidian-integration-testing';
 import { DEFAULT_PERIODS } from '../../src/settings.js';
+/*
+
+Parts that need to be written
+- File handling for notes
+  - Moving file to existing archive folder
+  - Creating new archive folder
+  - Handling existing file in archive folder
+  - Checking content matches the old note
+- Templating
+  - Note names
+  - Note content
+
+Structure
+- Initialise the settings
+- Prepare the template folder
+  - Copy all the templates from resources to the template folder
+- Prepare the current folder
+  - Prepare the archive folder
+  - Create archive for 
+
+*/
 
 const pluginId = 'Formatter';
 const fixtureRoot = 'Integration Fixtures';

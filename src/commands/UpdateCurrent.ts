@@ -32,11 +32,6 @@ export async function handlePeriod(plugin: AutoFormatter, period: Period, curren
         new Notice(`Archive folder misconfigured: ${plugin.settings.archiveFolderPath}`)
         return;
     }
-    const template = plugin.app.vault.getAbstractFileByPath(period.templatePath);
-    if (!(template instanceof TFile)) {
-        new Notice(`${period.name} template misconfigured: ${period.templatePath}`);
-        return;
-    }
 
     const [periodStart] = period.periodDefinition(current);
     const currentName = period.filenameFormat.replace(
@@ -72,6 +67,12 @@ export async function handlePeriod(plugin: AutoFormatter, period: Period, curren
 
     const currentPath = `${currentFolder.path}/${currentName}.md`;
     if (plugin.app.vault.getAbstractFileByPath(currentPath)) {
+        return;
+    }
+    const templatePath = period.templatePath.endsWith('.md') ? period.templatePath : `${period.templatePath}.md`;
+    const template = plugin.app.vault.getAbstractFileByPath(templatePath);
+    if (!(template instanceof TFile)) {
+        new Notice(`${period.name} template misconfigured: ${period.templatePath}`);
         return;
     }
 
@@ -140,7 +141,7 @@ function getUniquePath(plugin: AutoFormatter, path: string): string {
     if (!plugin.app.vault.getAbstractFileByPath(path)) return path;
     const extension = '.md';
     const basePath = path.slice(0, -extension.length);
-    let suffix = 2;
+    let suffix = 1;
     while (plugin.app.vault.getAbstractFileByPath(`${basePath} (${suffix})${extension}`)) suffix++;
     return `${basePath} (${suffix})${extension}`;
 }
@@ -209,23 +210,29 @@ export async function formatTemplate(plugin: AutoFormatter, filePath: string, pe
                             targetDate = (periodDates.get(periodName) ?? [])[periodNumber - 1] ?? new Date(0);
                         }
                         // Checks if targetDate is already set
-                        if (targetDate.getTime() !== 0) {
+                        if (targetDate !== new Date(0)) {
+                            console.log(`Calculating cached date for period: ${periodName} number: ${periodNumber}`);
                             // Fills in cache
                             // Period numbers are 1-indexed
                             // PeriodDates consists of the start dates
                             while ((periodDates.get(periodName) ?? []).length < periodNumber) {
                                 let dates = periodDates.get(periodName);
                                 if (!dates) {
-                                    dates = [];
+                                    dates = [period.periodDefinition(periodStart)[0]];
                                     periodDates.set(periodName, dates);
+                                    continue;
                                 }
                                 let date = dates?.[dates.length - 1];
                                 if (!date) {
-                                    date = period.periodDefinition(periodStart)[0];
+                                    new Notice(`Could not determine last date for period: ${periodName}`);
+                                    break;
                                 }
                                 // Get the end of the date period, add one to get a time in the next period, and then get the start of the next period
                                 date = period.periodDefinition(new Date(period.periodDefinition(date)[1].getTime() + 1))[0];
                                 dates.push(date);
+                                //Desired behaviour that day 1 for a day is the current day
+                                //Currently day 1 is next day.
+
                             }
                             targetDate = (periodDates.get(periodName) ?? [])[periodNumber - 1] ?? new Date(0);
                             if (targetDate.getTime() === 0) {
@@ -260,6 +267,7 @@ export async function updateCurrent(plugin: AutoFormatter): Promise<void> {
 
 
     for (const period of plugin.settings.periods) {
+        console.log(`Handling period: ${period.name}`);
         await handlePeriod(plugin, period, new Date());
     }
 }

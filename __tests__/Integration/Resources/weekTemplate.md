@@ -1,0 +1,17 @@
+## Tasks
+- [ ] Practice Book [due:: {{Day 7: yyyy-MM-dd}}] [scheduled:: {{Day 3: yyyy-MM-dd}}] [priority:: highest] 
+- [ ] Do assessments [due:: {{Day 3: yyyy-MM-dd}}] [scheduled:: {{Day 3: yyyy-MM-dd}}] [priority:: highest] 
+- [ ] Clean Gmail [due:: {{Day 7: yyyy-MM-dd}}] [scheduled:: {{Day 5: yyyy-MM-dd}}] [priority:: medium] 
+- [ ] 1H song [due:: {{Day 7: yyyy-MM-dd}}] [scheduled:: {{Day 5: yyyy-MM-dd}}] [priority:: low] 
+- [ ] Do assessments [due:: {{Day 6: yyyy-MM-dd}}] [scheduled:: {{Day 6: yyyy-MM-dd}}] [priority:: highest] 
+- [ ] Clean Room [due:: {{Day 7: yyyy-MM-dd}}] [scheduled:: {{Day 7: yyyy-MM-dd}}]
+- [ ] Laundry [due:: {{Day 7: yyyy-MM-dd}}] [scheduled:: {{Day 7: yyyy-MM-dd}}]
+- [ ] Review Tasks [due:: {{Day 7: yyyy-MM-dd}}] [scheduled:: {{Day 7: yyyy-MM-dd}}] [priority:: medium] 
+## Days
+[[{{Day 1: yyyy-MM-dd}}]]
+[[{{Day 2: yyyy-MM-dd}}]]
+[[{{Day 3: yyyy-MM-dd}}]]
+[[{{Day 4: yyyy-MM-dd}}]]
+[[{{Day 5: yyyy-MM-dd}}]]
+[[{{Day 6: yyyy-MM-dd}}]]
+[[{{Day 7: yyyy-MM-dd}}]]

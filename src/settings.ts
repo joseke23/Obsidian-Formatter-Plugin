@@ -20,7 +20,7 @@ export const DEFAULT_PERIODS: Period[] = [{
 	filenameFormat: "Week /yyyy-MM-dd/",
 	periodDefinition: (now: Date) => {
 		const startOfWeek = new Date(now);
-		startOfWeek.setDate(now.getDate() - now.getDay());
+		startOfWeek.setDate(now.getDate() - now.getDay() + 1);
 		startOfWeek.setHours(0, 0, 0, 0);
 		const endOfWeek = new Date(startOfWeek);
 		endOfWeek.setDate(startOfWeek.getDate() + 6);
@@ -31,7 +31,7 @@ export const DEFAULT_PERIODS: Period[] = [{
 {
 	name: "Month",
 	templatePath: "",
-	archivePath: "yyyy/",
+	archivePath: "yyyy/MM/",
 	filenameFormat: "Month /yyyy-MM/",
 	periodDefinition: (now: Date) => {
 		const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -134,10 +134,10 @@ export class SettingTab extends PluginSettingTab {
 
 	private addPeriodToggle(containerEl: HTMLElement, period: Period): void {
 		const configuredPeriod = this.plugin.settings.periods.find(({ name }) => name === period.name);
-
+		containerEl.createEl('h4', { text: period.name });
 		new Setting(containerEl)
 			.setName(period.name)
-			.setDesc(`Configure ${period.name.toLowerCase()} notes.`)
+			.setDesc(`Turn on ${period.name.toLowerCase()} notes.`)
 			.addToggle((toggle) =>
 				toggle
 					.setValue(this.plugin.settings.periods.some(({ name }) => name === period.name))
@@ -152,7 +152,13 @@ export class SettingTab extends PluginSettingTab {
 						this.plugin.settings.periods = DEFAULT_PERIODS.filter(({ name }) => selectedNames.has(name));
 						await this.plugin.saveSettings();
 					}),
-			)
+			);
+		/*if (!this.plugin.settings.periods.some(({ name }) => name === period.name)) {
+			return;
+		}*/
+		new Setting(containerEl)
+			.setName(period.name)
+			.setDesc(`Template for ${period.name.toLowerCase()} notes.`)
 			.addText((text) =>
 				text
 					.setPlaceholder('Folder/note.md')
@@ -164,7 +170,10 @@ export class SettingTab extends PluginSettingTab {
 							await this.plugin.saveSettings();
 						}
 					}),
-			)
+			);
+		new Setting(containerEl)
+			.setName(period.name)
+			.setDesc(`Archive path for ${period.name.toLowerCase()} notes.`)
 			.addText((text) =>
 				text
 					.setPlaceholder('/yyyy/MM/')
@@ -176,7 +185,10 @@ export class SettingTab extends PluginSettingTab {
 							await this.plugin.saveSettings();
 						}
 					}),
-			)
+			);
+		new Setting(containerEl)
+			.setName(period.name)
+			.setDesc(`Naming scheme for ${period.name.toLowerCase()} notes.`)
 			.addText((text) =>
 				text
 					.setPlaceholder(`${period.name} /yyyy-MM-dd/`)
