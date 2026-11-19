@@ -12,7 +12,7 @@ export const DEFAULT_PERIODS: Period[] = [{
 		endOfDay.setHours(23, 59, 59, 999);
 		return [startOfDay, endOfDay];
 	}
-} as Period,
+},
 {
 	name: "Week",
 	templatePath: "",
@@ -27,7 +27,7 @@ export const DEFAULT_PERIODS: Period[] = [{
 		endOfWeek.setHours(23, 59, 59, 999);
 		return [startOfWeek, endOfWeek];
 	}
-} as Period,
+},
 {
 	name: "Month",
 	templatePath: "",
@@ -39,7 +39,7 @@ export const DEFAULT_PERIODS: Period[] = [{
 		endOfMonth.setHours(23, 59, 59, 999);
 		return [startOfMonth, endOfMonth];
 	}
-} as Period,
+},
 {
 	name: "Year",
 	templatePath: "",
@@ -51,7 +51,7 @@ export const DEFAULT_PERIODS: Period[] = [{
 		endOfYear.setHours(23, 59, 59, 999);
 		return [startOfYear, endOfYear];
 	}
-} as Period
+}
 ];
 
 
@@ -147,7 +147,7 @@ export class SettingTab extends PluginSettingTab {
 
 	private addPeriodToggle(containerEl: HTMLElement, period: Period): void {
 		const configuredPeriod = this.plugin.settings.periods.find(({ name }) => name === period.name);
-		containerEl.createEl('h4', { text: period.name });
+		new Setting(containerEl).setName("").setHeading();
 		new Setting(containerEl)
 			.setName(period.name)
 			.setDesc(`Turn on ${period.name.toLowerCase()} notes.`)

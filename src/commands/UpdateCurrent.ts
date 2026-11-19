@@ -59,9 +59,8 @@ export function formatTemplate(content: string, periodStart: Date, periods: Peri
                 // Checks in cache
                 if (periodDates.has(periodName) && ((periodDates.get(periodName) ?? []).length < periodNumber)) {
                     targetDate = (periodDates.get(periodName) ?? [])[periodNumber - 1] ?? new Date(0);
-                }
-                // Checks if targetDate is already set
-                if (targetDate !== new Date(0)) {
+                    continue;
+                } else {
                     //console.log(`Calculating cached date for period: ${periodName} number: ${periodNumber}`);
                     // Fills in cache
                     // Period numbers are 1-indexed
@@ -98,7 +97,7 @@ export function formatTemplate(content: string, periodStart: Date, periods: Peri
                 content = content.replaceAll(match[0], formattedDate);
             }
         } catch (error) {
-            new Notice(`Error processing template: ${error}`);
+            new Notice(`Error processing template`);
             if (match) {
                 content = content.replaceAll(match[0], '');
             }
@@ -214,8 +213,6 @@ async function generatePeriodFile(plugin: AutoFormatter, currentFolder: TFolder,
 
 }
 export async function updateCurrent(plugin: AutoFormatter, date = new Date(), daysAhead = 1): Promise<void> {
-    // Waits till obsidian is fully loaded
-    await new Promise<void>((resolve) => plugin.app.workspace.onLayoutReady(resolve));
     // Checks that the settings are sensible
     const currentFolder = plugin.app.vault.getAbstractFileByPath(plugin.settings.currentFolderPath);
     if (!(currentFolder instanceof TFolder)) {

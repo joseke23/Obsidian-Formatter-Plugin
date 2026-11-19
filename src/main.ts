@@ -22,27 +22,31 @@ export default class AutoFormatter extends Plugin {
 	async onload() {
 		await this.loadSettings();
 
-		this.addRibbonIcon('dice', 'Reformat', (_evt: MouseEvent) => {
+		this.addRibbonIcon('dice', 'Reformat', async (_evt: MouseEvent) => {
 			// Called when the user clicks the icon.
-			new Notice('This is a notice!');
+			await updateCurrent(this, new Date(), this.settings.daysAhead).catch((error) => {
+				new Notice(`Error updating current files: ${error}`);
+			});
 		});
 
 
 		this.addCommand({
-			id: 'replace-selected',
-			name: 'Replace selected content',
-			editorCallback: (
-				editor: Editor,
-				_ctx: MarkdownView | MarkdownFileInfo,
-			) => {
-				editor.replaceSelection('Sample editor command');
+			id: 'update-current',
+			name: 'Update current files',
+			callback: async () => {
+				await updateCurrent(this, new Date(), this.settings.daysAhead).catch((error) => {
+					new Notice(`Error updating current files: ${error}`);
+				});
 			},
 		});
 
 		// This adds a settings tab so the user can configure various aspects of the plugin
 		this.addSettingTab(new SettingTab(this.app, this));
 
-		await updateCurrent(this);
+		this.app.workspace.onLayoutReady(async () => {
+			await updateCurrent(this, new Date(), this.settings.daysAhead);
+
+		});
 	}
 
 	onunload() { }
