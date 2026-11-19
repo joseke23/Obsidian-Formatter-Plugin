@@ -67,12 +67,14 @@ export interface PluginSettings {
 	periods: Period[];
 	currentFolderPath: string;
 	archiveFolderPath: string;
+	daysAhead: number;
 }
 
 export const DEFAULT_SETTINGS: PluginSettings = {
 	periods: DEFAULT_PERIODS,
 	currentFolderPath: "",
-	archiveFolderPath: ""
+	archiveFolderPath: "",
+	daysAhead: 1,
 }
 
 export function getConfiguredPeriods(configuredPeriods?: Partial<Period>[]): Period[] {
@@ -126,6 +128,17 @@ export class SettingTab extends PluginSettingTab {
 			'archiveFolderPath',
 		);
 
+		new Setting(containerEl).setName("Days ahead")
+			.setDesc("Number of days ahead to consider for future notes.")
+			.addText((text) =>
+				text
+					.setPlaceholder("30")
+					.setValue(this.plugin.settings.daysAhead.toString() ?? "30")
+					.onChange(async (daysAhead) => {
+						this.plugin.settings.daysAhead = Number(daysAhead);
+						await this.plugin.saveSettings();
+					}),
+			);
 		new Setting(containerEl).setName("Periods").setHeading();
 		for (const period of DEFAULT_PERIODS) {
 			this.addPeriodToggle(containerEl, period);

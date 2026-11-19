@@ -1,48 +1,48 @@
-## [[{{Month 1: yyyy-MM}}]]
+## [[Month {{Month 1: yyyy-MM}}]]
 ### The Eye Facing the Fear;  Breaking the cycle
 
 ### The Eye Embracing the Past; Building the future
-## [[{{Month 2: yyyy-MM}}]]
+## [[Month {{Month 2: yyyy-MM}}]]
 ### The Eye Facing the Fear;  Breaking the cycle
 
 ### The Eye Embracing the Past; Building the future
-## [[{{Month 3: yyyy-MM}}]]
+## [[Month {{Month 3: yyyy-MM}}]]
 ### The Eye Facing the Fear;  Breaking the cycle
 
 ### The Eye Embracing the Past; Building the future
-## [[{{Month 4: yyyy-MM}}]]
+## [[Month {{Month 4: yyyy-MM}}]]
 ### The Eye Facing the Fear;  Breaking the cycle
 
 ### The Eye Embracing the Past; Building the future
-## [[{{Month 5: yyyy-MM}}]]
+## [[Month {{Month 5: yyyy-MM}}]]
 ### The Eye Facing the Fear;  Breaking the cycle
 
 ### The Eye Embracing the Past; Building the future
-## [[{{Month 6: yyyy-MM}}]]
+## [[Month {{Month 6: yyyy-MM}}]]
 ### The Eye Facing the Fear;  Breaking the cycle
 
 ### The Eye Embracing the Past; Building the future
-## [[{{Month 7: yyyy-MM}}]]
+## [[Month {{Month 7: yyyy-MM}}]]
 ### The Eye Facing the Fear;  Breaking the cycle
 
 ### The Eye Embracing the Past; Building the future
-## [[{{Month 8: yyyy-MM}}]]
+## [[Month {{Month 8: yyyy-MM}}]]
 ### The Eye Facing the Fear;  Breaking the cycle
 
 ### The Eye Embracing the Past; Building the future
-## [[{{Month 9: yyyy-MM}}]]
+## [[Month {{Month 9: yyyy-MM}}]]
 ### The Eye Facing the Fear;  Breaking the cycle
 
 ### The Eye Embracing the Past; Building the future
-## [[{{Month 10: yyyy-MM}}]]
+## [[Month {{Month 10: yyyy-MM}}]]
 ### The Eye Facing the Fear;  Breaking the cycle
 
 ### The Eye Embracing the Past; Building the future
-## [[{{Month 11: yyyy-MM}}]]
+## [[Month {{Month 11: yyyy-MM}}]]
 ### The Eye Facing the Fear;  Breaking the cycle
 
 ### The Eye Embracing the Past; Building the future
-## [[{{Month 12: yyyy-MM}}]]
+## [[Month {{Month 12: yyyy-MM}}]]
 ### The Eye Facing the Fear;  Breaking the cycle
 
 ### The Eye Embracing the Past; Building the future

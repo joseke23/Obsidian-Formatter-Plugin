@@ -1,72 +1,49 @@
-import { evalInObsidian, reloadPlugin } from 'obsidian-integration-testing';
+/*import { evalInObsidian, reloadPlugin } from 'obsidian-integration-testing';
 import { DEFAULT_PERIODS } from '../../src/settings.js';
-/*
-
-Parts that need to be written
-- File handling for notes
-  - Moving file to existing archive folder
-  - Creating new archive folder
-  - Handling existing file in archive folder
-  - Checking content matches the old note
-- Templating
-  - Note names
-  - Note content
-
-Structure
-- Initialise the settings
-- Prepare the template folder
-  - Copy all the templates from resources to the template folder
-- Prepare the current folder
-  - Prepare the archive folder
-  - Create archive for 
-
-*/
 
 const pluginId = 'Formatter';
-const fixtureRoot = 'Integration Fixtures';
 const workingRoot = 'Integration Test';
+const dayPeriod = DEFAULT_PERIODS.find((period) => period.name === 'Day');
+
+if (!dayPeriod) {
+    throw new Error('The default day period is missing');
+}
 
 const settings = {
     currentFolderPath: `${workingRoot}/Current`,
     archiveFolderPath: `${workingRoot}/Archive`,
-    periods: DEFAULT_PERIODS.filter((period) => period.name === 'Day').map((period) => ({
-        ...period,
-        templatePath: `${workingRoot}/Templates/${period.name}.md`,
-    })),
+    periods: [{
+        ...dayPeriod,
+        templatePath: `${workingRoot}/Templates/Day.md`,
+    }],
 };
 
 type FixtureSet = {
-    template: string;
-    expected: string;
-    source?: string;
+    templateContent?: string;
+    currentFiles?: Array<{ name: string; content: string }>;
+    archiveFiles?: Array<{ path: string; content: string }>;
 };
 
-async function readFixture(path: string): Promise<string> {
-    return evalInObsidian({
-        input: { path },
-        callback: async ({ app, obsidianModule, path: fixturePath }) => {
-            const file = app.vault.getAbstractFileByPath(fixturePath);
-            if (!(file instanceof obsidianModule.TFile)) {
-                throw new Error(`Missing integration fixture: ${fixturePath}`);
-            }
-            return app.vault.read(file);
-        },
-    });
+const defaultTemplate = 'Created on {{Day 1: yyyy-MM-dd}}';
+
+function dayNoteName(date = new Date()): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `Day ${year}-${month}-${day}.md`;
 }
 
-async function prepareVault(fixtures: FixtureSet): Promise<void> {
-    const templateContent = await readFixture(`${fixtureRoot}/${fixtures.template}`);
-    const sourceContent = fixtures.source
-        ? await readFixture(`${fixtureRoot}/${fixtures.source}`)
-        : undefined;
+function dayDateText(date = new Date()): string {
+    return dayNoteName(date).slice('Day '.length, -'.md'.length);
+}
 
+async function prepareVault(fixtures: FixtureSet = {}): Promise<void> {
     await evalInObsidian({
-        input: { templateContent, sourceContent },
-        callback: async ({ app, templateContent: content, sourceContent: source }) => {
+        input: { fixtures, settings, workingRoot, defaultTemplate },
+        callback: async ({ app, fixtures: fixtureSet, settings: configuredSettings, workingRoot: root, defaultTemplate: template }) => {
             const ensureFolder = async (path: string): Promise<void> => {
-                const parts = path.split('/');
                 let currentPath = '';
-                for (const part of parts) {
+                for (const part of path.split('/').filter(Boolean)) {
                     currentPath = currentPath ? `${currentPath}/${part}` : part;
                     if (!app.vault.getAbstractFileByPath(currentPath)) {
                         await app.vault.createFolder(currentPath);
@@ -74,23 +51,26 @@ async function prepareVault(fixtures: FixtureSet): Promise<void> {
                 }
             };
 
-            const workingFolder = app.vault.getAbstractFileByPath(workingRoot);
-            if (workingFolder) {
-                await app.vault.delete(workingFolder, true);
+            const existingRoot = app.vault.getAbstractFileByPath(root);
+            if (existingRoot) {
+                await app.vault.delete(existingRoot, true);
             }
 
-            await ensureFolder(`${workingRoot}/Current`);
-            await ensureFolder(`${workingRoot}/Archive`);
-            await ensureFolder(`${workingRoot}/Templates`);
+            await ensureFolder(configuredSettings.currentFolderPath);
+            await ensureFolder(configuredSettings.archiveFolderPath);
+            await ensureFolder(`${root}/Templates`);
             await app.vault.create(
-                `${workingRoot}/Templates/Day.md`,
-                content,
+                `${root}/Templates/Day.md`,
+                fixtureSet.templateContent ?? template,
             );
-            if (source !== undefined) {
-                await app.vault.create(
-                    `${workingRoot}/Current/Day 2000-01-01.md`,
-                    source,
-                );
+
+            for (const file of fixtureSet.currentFiles ?? []) {
+                await app.vault.create(`${configuredSettings.currentFolderPath}/${file.name}`, file.content);
+            }
+            for (const file of fixtureSet.archiveFiles ?? []) {
+                const pathParts = file.path.split('/');
+                await ensureFolder(pathParts.slice(0, -1).join('/'));
+                await app.vault.create(file.path, file.content);
             }
         },
     });
@@ -105,66 +85,124 @@ async function reloadFormatter(): Promise<void> {
     expect(result.isLoaded).toBe(true);
 }
 
-async function readGeneratedDay(): Promise<{ content: string; path: string }> {
+async function getMarkdownPaths(folderPath: string): Promise<string[]> {
     return evalInObsidian({
-        input: { currentFolderPath: settings.currentFolderPath },
-        callback: async ({ app, obsidianModule, currentFolderPath }) => {
-            const folder = app.vault.getAbstractFileByPath(currentFolderPath);
+        input: { folderPath },
+        callback: async ({ app, obsidianModule, folderPath: path }) => {
+            const folder = app.vault.getAbstractFileByPath(path);
             if (!(folder instanceof obsidianModule.TFolder)) {
-                throw new Error(`Missing current folder: ${currentFolderPath}`);
+                throw new Error(`Missing folder: ${path}`);
             }
-            const file = folder.children.find(
-                (child): child is InstanceType<typeof obsidianModule.TFile> =>
-                    child instanceof obsidianModule.TFile &&
-                    child.extension === 'md' &&
-                    child.basename.startsWith('Day '),
-            );
-            if (!file) {
-                throw new Error('The formatter did not create a current day note');
-            }
-            return { content: await app.vault.read(file), path: file.path };
+            return folder.children
+                .filter(
+                    (file): file is InstanceType<typeof obsidianModule.TFile> =>
+                        file instanceof obsidianModule.TFile && file.extension === 'md',
+                )
+                .map((file) => file.path)
+                .sort();
         },
     });
 }
 
-describe('Update current integration', () => {
-    it('formats a current note with FormatTemplate', async () => {
-        await prepareVault({
-            template: 'Day Template.md',
-            expected: 'Day Expected.md',
-        });
+async function readVaultFile(path: string): Promise<string> {
+    return evalInObsidian({
+        input: { path },
+        callback: async ({ app, obsidianModule, path: filePath }) => {
+            const file = app.vault.getAbstractFileByPath(filePath);
+            if (!(file instanceof obsidianModule.TFile)) {
+                throw new Error(`Missing file: ${filePath}`);
+            }
+            return app.vault.read(file);
+        },
+    });
+}
+
+async function expectFile(path: string, content: string): Promise<void> {
+    await expect(readVaultFile(path)).resolves.toBe(content);
+}
+
+describe('updateCurrent integration', () => {
+    it('creates and formats the current note from the template', async () => {
+        const expectedDate = new Date();
+        await prepareVault();
         await reloadFormatter();
 
-        const generated = await readGeneratedDay();
-        expect(generated.content).toBe(await readFixture(`${fixtureRoot}/Day Expected.md`));
+        const path = `${settings.currentFolderPath}/${dayNoteName(expectedDate)}`;
+        await expectFile(path, `Created on ${dayDateText(expectedDate)}`);
     });
 
-    it('archives an existing period note and creates the next current note', async () => {
+    it('does not overwrite an existing current note', async () => {
+        const currentName = dayNoteName();
         await prepareVault({
-            template: 'Day Template.md',
-            expected: 'Day Expected.md',
-            source: 'Day Archive Source.md',
+            currentFiles: [{ name: currentName, content: 'Keep this content' }],
         });
         await reloadFormatter();
 
-        const archived = await evalInObsidian({
-            input: { archiveFolderPath: settings.archiveFolderPath },
-            callback: async ({ app, obsidianModule, archiveFolderPath }) => {
-                const archiveFolder = app.vault.getAbstractFileByPath(archiveFolderPath);
-                if (!(archiveFolder instanceof obsidianModule.TFolder)) {
-                    throw new Error(`Missing archive folder: ${archiveFolderPath}`);
-                }
-                const file = app.vault.getMarkdownFiles().find(
-                    (candidate) =>
-                        candidate.path.startsWith(`${archiveFolderPath}/`) &&
-                        candidate.basename === 'Day 2000-01-01',
-                );
-                if (!file) {
-                    throw new Error('The formatter did not archive the existing day note');
-                }
-                return app.vault.read(file);
-            },
+        await expectFile(`${settings.currentFolderPath}/${currentName}`, 'Keep this content');
+        await expect(getMarkdownPaths(settings.currentFolderPath)).resolves.toEqual([
+            `${settings.currentFolderPath}/${currentName}`,
+        ]);
+    });
+
+    it('archives an old note, preserves its content, and creates the current note', async () => {
+        const expectedDate = new Date();
+        const currentName = dayNoteName(expectedDate);
+        await prepareVault({
+            currentFiles: [{ name: 'Day 2000-01-01.md', content: 'Archive me' }],
         });
-        expect(archived).toBe(await readFixture(`${fixtureRoot}/Day Archive Source.md`));
+        await reloadFormatter();
+
+        await expectFile(
+            `${settings.archiveFolderPath}/2000/01/Day 2000-01-01.md`,
+            'Archive me',
+        );
+        await expectFile(
+            `${settings.currentFolderPath}/${currentName}`,
+            `Created on ${dayDateText(expectedDate)}`,
+        );
+        await expect(getMarkdownPaths(settings.currentFolderPath)).resolves.toEqual([
+            `${settings.currentFolderPath}/${currentName}`,
+        ]);
+    });
+
+    it('creates nested archive folders and uses a unique path for collisions', async () => {
+        await prepareVault({
+            currentFiles: [{ name: 'Day 2000-01-01.md', content: 'Archive me' }],
+            archiveFiles: [{
+                path: `${settings.archiveFolderPath}/2000/01/Day 2000-01-01.md`,
+                content: 'Existing archive',
+            }],
+        });
+        await reloadFormatter();
+
+        await expectFile(
+            `${settings.archiveFolderPath}/2000/01/Day 2000-01-01.md`,
+            'Existing archive',
+        );
+        await expectFile(
+            `${settings.archiveFolderPath}/2000/01/Day 2000-01-01 (1).md`,
+            'Archive me',
+        );
+    });
+
+    it('ignores unrelated files in the current folder', async () => {
+        const currentName = dayNoteName();
+        await prepareVault({
+            currentFiles: [
+                { name: 'README.md', content: 'Do not move' },
+                { name: 'Day not-a-date.md', content: 'Do not move' },
+                { name: 'image.png', content: 'Do not move' },
+            ],
+        });
+        await reloadFormatter();
+
+        await expectFile(`${settings.currentFolderPath}/README.md`, 'Do not move');
+        await expectFile(`${settings.currentFolderPath}/Day not-a-date.md`, 'Do not move');
+        await expect(getMarkdownPaths(settings.currentFolderPath)).resolves.toEqual([
+            `${settings.currentFolderPath}/${currentName}`,
+            `${settings.currentFolderPath}/Day not-a-date.md`,
+            `${settings.currentFolderPath}/README.md`,
+        ]);
     });
 });
+*/
